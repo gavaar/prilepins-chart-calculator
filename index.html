@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<head>
+  <meta name="title" content="Prilepin's chart calculator" />
+  <meta name="description" content="Little calculator for Prilepin's chart values, according to PRs, for all compound movements" />
+
+  <!-- Google fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    body {
+      font-family: "Roboto", sans-serif;
+      margin: auto;
+      padding: 0.5rem;
+      max-width: 64rem;
+      background-color: whitesmoke;
+    }
+
+    table {
+      border-spacing: 1rem 0.5rem;
+      border-spacing: 0;
+    }
+
+    thead {
+      color: white;
+      background-color: darkslategray;
+      font-weight: bold;
+    }
+    
+    thead td {
+      padding-bottom: 0.5rem;
+    }
+
+    tbody tr:nth-child(odd) {
+     background-color: #f3f3f3;
+    }
+
+    td {
+      font-size: 0.85rem;
+      text-wrap: nowrap;
+      padding: 0.5rem;
+      width: calc(min(100dvw, 64rem) / 4 - calc(3rem / 5));
+    }
+
+    td:last-of-type {
+      vertical-align: bottom;
+      width: 5rem;
+    }
+
+    input[type=number] {
+      font-size: 1rem;
+      border: 0;
+      background: transparent;
+      width: 50%;
+      padding: 0 1rem;
+      border-bottom: 1px solid lightgray;
+    }
+
+    code {
+      padding: 0 0.5rem;
+      background-color: #1e1e1e;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Prilepin's chart calculator</h1>
+
+  <table>
+    <thead>
+      <td>Exercise</td>
+      <td>60 - 70 %</td>
+      <td>70 - 80 %</td>
+      <td>80 - 90 %</td>
+      <td>1RM (Kg)</td>
+    </thead>
+
+    <tbody id="table_body">
+      <!-- Body's content will be added programatically -->
+    </tbody>
+  </table>
+
+  <hr />
+
+  <small>
+    <p>
+      First sessions will go from the low range (60 - 70 %) from <code>7 / 7 / 7</code> reps, into <code>7 / 7 / 8</code> reps, then <code>7 / 8 / 8</code> reps, and so on, until I reach <code>9 / 9 / 9</code>. This takes 7 sessions.
+    </p>
+    <p>
+      This means that for the first rep range (60 - 70 %), It'll take 14 sessions, 7 for the first three workouts in a single day, and 7 for the second three workouts in an alternate day.
+    </p>
+    <p>
+      After finishing the low-stress range, I'll move up to the middle range, now starting at <code>5 / 5 / 5</code> and ending in <code>7 / 7 / 7</code>. Then move up in the range again but from <code>3</code> to <code>5</code>
+    </p>
+    <p>
+      I use this prilepin's chart calculator to plan ahead on what my routine will be for the next 42 (14 x 3) sessions. Plus two sessions for PR attempts, and two more for low stress recovery. A total of 46 sessions.
+    </p>
+    <p>
+      Since I usually do 3 sessions per week. This should translate into a 15-16 week period, or 4 months, give or take (vacations happen).
+    </p>
+    <p>
+      The Kg I put to the right of the table are my goal PR; meaning, I have not achieved this PRs, but are my next goal. If I can do them after the 4 month period, I consider this a win.
+      If I can increase my PR 3x times during a year, I consider this a massive win.
+    </p>
+    <p>
+      <i>Note</i>: for each starting range, I'll attempt to use the higher end weight of the spectrum. If this weight becomes too heavy at some point, or trying to increase the next rep amount with the same weight seems like I'll fail:
+      I cut the weight by 2.5Kg to not diminish the target reps. I also try to train to failure (PE 9 or PE 10)
+    </p>
+  </small>
+
+  <script>
+    const exercisesConfig = [
+      {
+        id: 'squat',
+        name: 'Squat',
+      },
+      {
+        id: 'overhead_press',
+        name: 'OHP',
+      },
+      {
+        id: 'bicep_curl',
+        name: 'Bicep curl',
+      },
+      {
+        id: 'bench_press',
+        name: 'Bench press',
+      },
+      {
+        id: 'deadlift',
+        name: 'Deadlift',
+      },
+      {
+        id: 'barbell_row',
+        name: 'Barbell row',
+      },
+    ];
+
+    const valueToClosestTwoPointFive = (value) => {
+      const distanceInTwoPFive = value % 2.5;
+
+      // round up
+      if (distanceInTwoPFive > 1.25) {
+        return value - distanceInTwoPFive + 2.5;
+      }
+
+      // round down
+      return value - distanceInTwoPFive;
+    }
+
+    (function () {
+      const tableBody = document.getElementById('table_body');
+
+      for (const exercise of exercisesConfig) {
+        // create row
+        const row = document.createElement('tr');
+        row.setAttribute('id', exercise.id);
+
+        // append exercise name to row
+        const exerciseTD = document.createElement('td');
+        exerciseTD.innerText = exercise.name;
+        row.appendChild(exerciseTD);
+
+        // append the ranges to row
+        for (let i = 0; i < 3; i++) {
+          const range = document.createElement('td');
+          range.innerText = '-';
+          row.appendChild(range);
+        }
+
+        // append the input cell to the row
+        const inputCell = document.createElement('td');
+        const inputNode = document.createElement('input');
+        inputNode.setAttribute('type', 'number');
+        inputNode.setAttribute('step', '1');
+        inputNode.setAttribute('min', '0');
+        inputNode.setAttribute('max', '999');
+        inputNode.setAttribute('placeholder', '--');
+
+        // listen for change on the input fields
+        inputNode.addEventListener('keyup', (event) => {
+          if (event.target.value > 999) {
+            event.target.value = 999;
+          }
+
+          if (event.target.value < 0) {
+            event.target.value = 0;
+          }
+
+          const setValue = event.target.value;
+          localStorage.setItem(exercise.id, setValue);
+
+          const v60 = valueToClosestTwoPointFive(setValue * .6);
+          const v65 = valueToClosestTwoPointFive(setValue * .65);
+          const v70 = valueToClosestTwoPointFive(setValue * .7);
+          const v75 = valueToClosestTwoPointFive(setValue * .75);
+          const v80 = valueToClosestTwoPointFive(setValue * .8);
+          const v85 = valueToClosestTwoPointFive(setValue * .85);
+          const v90 = valueToClosestTwoPointFive(setValue * .9);
+
+          row.children[1].innerText = `${v60} - ${v70} (${v65})`;
+          row.children[2].innerText = `${v70} - ${v80} (${v75})`;
+          row.children[3].innerText = `${v80} - ${v90} (${v85})`;
+        });
+
+        if (localStorage.getItem(exercise.id)) {
+          inputNode.setAttribute('value', localStorage.getItem(exercise.id));
+          inputNode.dispatchEvent(new Event('keyup'));
+        }
+
+        inputCell.appendChild(inputNode);
+        // inputCell.appendChild(document.createTextNode('\u00A0Kg'));
+
+        row.appendChild(inputCell);
+
+        // append row to table body
+        tableBody.appendChild(row);
+      }
+    })();
+  </script>
+</body>
